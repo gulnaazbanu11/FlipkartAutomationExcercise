@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="Flipkart Automation" verbose="1" parallel="tests" thread-count="2" >
+    <test name="loginAndPurchaseCameraValidation in Chrome" preserve-order="true" >
+        <parameter name = "Browser" value="chrome"/>
+        <classes>
+            <class name="DifferentBrowserTest"/>
+        </classes>
+    </test>
+    
+    <test name="loginAndPurchaseCameraValidation in FireFox" preserve-order="true" >
+        <parameter name = "Browser" value="firefox"/>
+        <classes>
+            <class name="DifferentBrowserTest"/>
+        </classes>
+    </test>
+    
+    <test name="loginAndPurchaseCameraValidation in Internet Explorer" preserve-order="true" >
+        <parameter name = "Browser" value="IE"/>
+        <classes>
+            <class name="DifferentBrowserTest"/>
+        </classes>
+    </test>
+    
+</suite>

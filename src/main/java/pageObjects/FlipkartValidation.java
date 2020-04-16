@@ -8,6 +8,7 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.testng.Assert;
+import org.testng.Reporter;
 
 import base.BaseClass;
 import commons.WebElementLocators.FlipkartLogin;
@@ -23,6 +24,7 @@ public class FlipkartValidation extends BaseClass implements FlipkartLogin, Flip
 		driver.findElement(password).sendKeys(readConfigProperty("password"));
 		Thread.sleep(2000);
 		driver.findElement(loginBtn).click();
+		Reporter.log("Logged in Successfully");
 	}
 	
 	public void searchProduct(String product) throws InterruptedException
@@ -32,6 +34,7 @@ public class FlipkartValidation extends BaseClass implements FlipkartLogin, Flip
 		driver.findElement(searchBox).sendKeys(product);
 		driver.findElement(searchBox).sendKeys(Keys.ENTER);	
 		System.out.println("Search result..");
+		Reporter.log("Search result came up");
 	}
 	
 	
@@ -44,19 +47,23 @@ public class FlipkartValidation extends BaseClass implements FlipkartLogin, Flip
 		int randomValue = rand.nextInt(name.size());
 		name.get(randomValue).click();
 		System.out.println("Clicked on random product");
+		Reporter.log("Clicked on Random product");
 		String randomName = name.get(randomValue).getText();
 		System.out.println("Name of the Product : "+randomName);
 		String randomPrice= price.get(randomValue).getText();
 		System.out.println("Price of the Product : "+randomPrice);
 		BaseClass.switchToCheckoutWindow();
 		String nameInCOScreen = driver.findElement(nameInCheckoutScreen).getText();
-		System.out.println(nameInCOScreen);
+		System.out.println("Name of product in checkout screen : "+nameInCOScreen);
 		//checkpoint for name of product from search screen to checkpoint screen
 		Assert.assertTrue(nameInCOScreen.startsWith(randomName), "Name of product is not same in checkout screen");
+		Reporter.log("Name of the product matches between search screen and checkout screen!");
 		String priceInCOScreen = driver.findElement(priceInCheckoutScreen).getText();
-		System.out.println(priceInCOScreen);
+		System.out.println("Name of product in checkout screen : "+priceInCOScreen);
 		//checkpoint for price of product from search screen to checkpoint screen
 		Assert.assertEquals(randomPrice,priceInCOScreen,"Price is not same");
+		Reporter.log("Price of the product matches between search screen and checkout screen!");
+
 	}
 	
 	public void logoutFlipkart()
@@ -64,6 +71,7 @@ public class FlipkartValidation extends BaseClass implements FlipkartLogin, Flip
 		Actions action = new Actions(driver);
 		action.moveToElement(driver.findElement(userTab)).perform();
 		driver.findElement(logout).click();
+		Reporter.log("Logged out from flipkart application");
 	}
 	
 }

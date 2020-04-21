@@ -3,31 +3,54 @@ package base;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import com.relevantcodes.extentreports.ExtentReports;
+import com.relevantcodes.extentreports.ExtentTest;
+import com.relevantcodes.extentreports.LogStatus;
 import org.apache.commons.io.FileUtils;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.ITestResult;
 import org.testng.Reporter;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
-
-import pageObjects.FlipkartValidation;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Test;
+import pageObjects.HomePage;
+import pageObjects.LoginPage;
 
 public class BaseClass {
-
-	
-	public static WebDriver driver=null;
-	public static String webBrowser="chrome";
-	
+	public  WebDriver driver=null;
+	public ExtentTest test;
+	public ExtentReports report;
+	public ITestResult iTestResult = null;
+	public LoginPage loginPage = null;
+	public HomePage homePage = null;
+	public String defaultBrowser = "chrome";
 	@BeforeMethod
-	public void openBrowser() throws InterruptedException, IOException
+	public void beforeMethod(@Optional String browser, Method method) throws InterruptedException, IOException {
+		Test testMethod = method.getAnnotation(Test.class);
+		report = new ExtentReports(System.getProperty("user.dir") + "\\ExtentReportResults.html");
+		report.loadConfig(new File(System.getProperty("user.dir") + "\\src\\main\\resources\\extent-config.xml"));
+		test = report.startTest(testMethod.description());
+		if (browser != null) {
+			this.openBrowser(browser);
+		} else {
+			this.openBrowser(defaultBrowser);
+		}
+		loginPage = new LoginPage(this);
+		homePage = new HomePage(this);
+	}
+
+	public void openBrowser(String webBrowser) throws InterruptedException, IOException
 	{
 		
 		if(webBrowser.equalsIgnoreCase("chrome"))
@@ -50,19 +73,24 @@ public class BaseClass {
 		}
 		driver.manage().window().maximize();
 		driver.manage().deleteAllCookies();
-		driver.get(readConfigProperty("url"));
+		driver.get(ReadProperty.readConfigProperty("url"));
 		Reporter.log("Opened Flipkart Application");
 		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 	}
-	
+
 	@AfterMethod
-	public void closeBrowser() throws IOException
-	{
+	public void closeBrowser(Method method) throws IOException {
+		Test testMethod = method.getAnnotation(Test.class);
+		if (!iTestResult.isSuccess()) {
+			test.log(LogStatus.FAIL, "Test "+testMethod.description()+" is failed");
+			test.addBase64ScreenShot(getBase64Image());
+		}
 		driver.quit();
-		Reporter.log("Browser Closed");
+		report.endTest(test);
+		report.flush();
 	}
 	
-	public static void captureScreenshot(String screenshotName) throws IOException
+	public  void captureScreenshot(String screenshotName) throws IOException
 	{
 		File file = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
 		FileUtils.copyFile(file, new File(System.getProperty("user.dir")+"/resources.Screenshots/"+screenshotName+".jpg"));
@@ -70,15 +98,8 @@ public class BaseClass {
 		Reporter.log("Captured the screenshot and saved under resources folder");
 	}
 	
-	public static String readConfigProperty(String value) throws IOException
-	{
-		Properties prop=new  Properties();
-		FileInputStream input = new FileInputStream(System.getProperty("user.dir")+"/src/main/java/resources/config.properties");
-		prop.load(input);
-		return prop.getProperty(value);
-	}
-	
-	public static void switchToCheckoutWindow()
+
+	public  void switchToCheckoutWindow()
 	{
 		String mainWindow = driver.getWindowHandle();
 		ArrayList<String> windowHandles = new ArrayList<String> (driver.getWindowHandles());
@@ -89,5 +110,19 @@ public class BaseClass {
 		}
 		Reporter.log("Switched to product window");
 	}
+	public String getBase64Image() {
+		TakesScreenshot newScreen = (TakesScreenshot) driver;
+		String scnShot = newScreen.getScreenshotAs(OutputType.BASE64);
+		return "data:image/jpg;base64, " + scnShot;
+	}
 
+	public void waitForInvisibelityOfElement(By xpath) {
+		WebDriverWait wait = new WebDriverWait(driver, 80);
+		wait.until(ExpectedConditions.invisibilityOfElementLocated(xpath));
+	}
+	public WebElement getVisibleElement(By xpath) {
+		WebDriverWait wait = new WebDriverWait(driver, 60);
+		WebElement element = wait.until(ExpectedConditions.visibilityOf(driver.findElement(xpath)));
+		return element;
+	}
 }

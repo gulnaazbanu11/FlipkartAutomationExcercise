@@ -20,10 +20,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.ITestResult;
 import org.testng.Reporter;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Optional;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import pageObjects.HomePage;
 import pageObjects.LoginPage;
 
@@ -35,6 +32,7 @@ public class BaseClass {
 	public LoginPage loginPage = null;
 	public HomePage homePage = null;
 	public String defaultBrowser = "chrome";
+	@Parameters("browser")
 	@BeforeMethod
 	public void beforeMethod(@Optional String browser, Method method) throws InterruptedException, IOException {
 		Test testMethod = method.getAnnotation(Test.class);
